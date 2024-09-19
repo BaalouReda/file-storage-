@@ -59,7 +59,7 @@ public class DocumentController {
             header.add("Cache-Control", "no-cache, no-store, must-revalidate");
             header.add("Pragma", "no-cache");
             header.add("Expires", "0");
-            //header.add("metadata", documentDto.getFileMetadata().toString());
+            header.add("metadata", documentDto.getFileMetadata().toString());
             return ResponseEntity.ok()
                     .headers(header)
                     .contentType(MediaType.parseMediaType("application/octet-stream"))
