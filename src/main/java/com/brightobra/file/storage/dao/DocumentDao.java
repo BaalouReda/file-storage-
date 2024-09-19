@@ -1,11 +1,11 @@
 package com.brightobra.file.storage.dao;
 
 
+import com.brightobra.file.storage.pojo.Metadata;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,6 +18,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class DocumentDao {
     @Id
     String id;
-    //Metadata fileMetadata;
-    DataBuffer fileContent;
+    Metadata fileMetadata;
+    //DataBuffer fileContent;
 }
