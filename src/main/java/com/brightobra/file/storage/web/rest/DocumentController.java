@@ -1,0 +1,67 @@
+package com.brightobra.file.storage.web.rest;
+
+
+import com.brightobra.file.storage.dto.DocumentDto;
+import com.brightobra.file.storage.pojo.DtoViews;
+import com.brightobra.file.storage.service.DocumentService;
+import com.fasterxml.jackson.annotation.JsonView;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/document")
+public class DocumentController {
+    private final DocumentService documentService;
+
+    @RequestMapping(
+            method = RequestMethod.POST,
+            produces = "application/json",
+            consumes = { "multipart/form-data" }
+    )
+    @JsonView(DtoViews.DocumentDtoUpload.class)
+    public ResponseEntity<?> uploadFile(
+            @RequestPart("file") MultipartFile file
+    ) {
+        try {
+            return new  ResponseEntity<>(documentService.uploadFile(file), HttpStatus.OK) ;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @RequestMapping(
+            method = RequestMethod.GET,
+            produces = "application/json",
+            path = "/{id}"
+    )
+    @JsonView(DtoViews.DocumentDtoDownload.class)
+    public ResponseEntity<?> downloadFile(
+            @PathVariable String id
+    ) {
+        try {
+            DocumentDto documentDto = documentService.downloadFile(id);
+            HttpHeaders header = new HttpHeaders();
+            header.add(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=\""
+                            + FilenameUtils.getBaseName(documentDto.getFileName())
+                            + "\"");
+            header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+            header.add("Pragma", "no-cache");
+            header.add("Expires", "0");
+            return ResponseEntity.ok()
+                    .headers(header)
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
+                    .body(documentDto.getFile());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
