@@ -1,31 +1,25 @@
 package com.brightobra.file.storage.service;
 
-import com.brightobra.file.storage.configuration.security.OpenBSDBCryptPasswordEncoder;
 import com.brightobra.file.storage.dao.UserDao;
 import com.brightobra.file.storage.dto.UserDto;
+import com.brightobra.file.storage.mapper.UserMapper;
 import com.brightobra.file.storage.repositorie.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.brightobra.file.storage.pojo.Role;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService {
+public class UserService  {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder encoder;
+
 
     public UserDto save(UserDto userDto){
         UserDao userDao = new UserDao();
         userDao.setEmail(userDto.getEmail());
         userDao.setUsername(userDto.getUsername());
-        userDao.setPassword(encoder.encode(userDto.getPassword()));
+        userDao.setPassword(userDto.getPassword());
         userDao.setRole(userDto.getRole());
         userDao.setEnabled(Boolean.TRUE);
         userDao.setAccountNonExpired(Boolean.TRUE);
@@ -48,26 +42,24 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    public UserDao getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return this.findByRole(auth.getName());
-    }
 
-    public UserDao findById(String id){
-        return userRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+    public UserDto findById(String id){
+        UserDao userDao =  userRepository.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+        return UserMapper.toDto(userDao);
     }
 
 
-    public UserDao loadUserByEamil(String email) {
-        return userRepository.findByEmail(email);
+    public UserDto loadUserByEamil(String email) {
+        UserDao userDao = userRepository.findByEmail(email).orElse(null);
+        if (userDao == null) {
+            return null;
+        }
+        return UserMapper.toDto(userDao);
     }
 
-    public UserDao findByRole(String role){
-        return userRepository.findByRole(Role.valueOf(role)).orElseThrow(()->new RuntimeException("User not found"));
+    public UserDto findByRole(String role){
+        UserDao userDao =  userRepository.findByRole(Role.valueOf(role)).orElseThrow(()->new RuntimeException("User not found"));
+        return UserMapper.toDto(userDao);
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByEmail(username);
-    }
 }

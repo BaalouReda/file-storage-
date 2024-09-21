@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 public class MongoConfiguration {
 
     @Value("${spring.data.mongodb.database}")
@@ -18,6 +18,7 @@ public class MongoConfiguration {
 
     @Value("${spring.data.mongodb.gridfs.bucket}")
     private  String bucketName;
+
 
 
     @Bean

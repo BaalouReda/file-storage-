@@ -27,7 +27,7 @@ public class UserDto {
     @JsonView(UserDtoViews.UserDtoRequest.class)
     String password;
     @JsonView(UserDtoViews.UserDtoRequest.class)
-    Role role;
+    Set<Role> role;
     String bucketName;
     boolean accountNonExpired;
     boolean isEnabled;

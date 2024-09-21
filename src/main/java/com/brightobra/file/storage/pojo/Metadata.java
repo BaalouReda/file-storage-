@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 public class Metadata {
     String fileName;
     String fileType;
+    String owner;
     long fileSize;
     boolean isEncrypted;
     boolean isCompressed;

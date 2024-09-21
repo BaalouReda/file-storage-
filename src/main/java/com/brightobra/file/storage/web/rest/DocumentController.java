@@ -10,7 +10,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,21 +21,22 @@ import org.springframework.http.MediaType;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/document/")
-//@PreAuthorize("hasAnyAuthority('ADMIN')")
 public class DocumentController {
     private final DocumentService documentService;
 
     @RequestMapping(
             method = RequestMethod.POST,
             produces = "application/json",
-            consumes = { "multipart/form-data" }
+            consumes = { "multipart/form-data"},
+            path = "{user}"
     )
     @JsonView(FileDtoViews.DocumentDtoUpload.class)
     public ResponseEntity<?> uploadFile(
+            @PathVariable String user,
             @RequestPart("file") MultipartFile file
     ) {
         try {
-            return new  ResponseEntity<>(documentService.uploadFile(file), HttpStatus.OK) ;
+            return new  ResponseEntity<>(documentService.uploadFile(file,user), HttpStatus.OK) ;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -45,14 +45,15 @@ public class DocumentController {
     @RequestMapping(
             method = RequestMethod.GET,
             produces = "application/json",
-            path = "{id}"
+            path = "{user}/{id}"
     )
     @JsonView(FileDtoViews.DocumentDtoDownload.class)
     public ResponseEntity<?> downloadFile(
+            @PathVariable String user,
             @PathVariable String id
     ) {
         try {
-            DocumentDto documentDto = documentService.downloadFile(id);
+            DocumentDto documentDto = documentService.downloadFile(user,id);
             HttpHeaders header = new HttpHeaders();
             header.add(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment; filename=\""

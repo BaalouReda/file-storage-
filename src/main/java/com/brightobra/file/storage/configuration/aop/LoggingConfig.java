@@ -6,6 +6,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 
 @Aspect
 @Component
+@Profile("dev")
 public class LoggingConfig {
 
     private static final Logger logger = LogManager.getLogger(LoggingConfig.class);

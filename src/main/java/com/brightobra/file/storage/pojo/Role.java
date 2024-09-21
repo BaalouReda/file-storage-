@@ -1,8 +1,6 @@
 package com.brightobra.file.storage.pojo;
 
-import org.springframework.security.core.GrantedAuthority;
-
-public enum Role implements GrantedAuthority {
+public enum Role  {
     ROLE_USER("USER"),
     ROLE_ADMIN("ADMIN");
 
@@ -16,9 +14,4 @@ public enum Role implements GrantedAuthority {
         return this.value;
     }
 
-
-    @Override
-    public String getAuthority() {
-        return name();
-    }
 }
