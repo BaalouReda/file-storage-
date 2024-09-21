@@ -9,9 +9,11 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Component
@@ -29,6 +31,9 @@ public class EncryptionUtil {
         return keyGen.generateKey();
     }
 
+    public static SecretKey  getSecretKey(String secretKey) {
+        return new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), AES);
+    }
 
     public static InputStream encrypt(InputStream data, SecretKey key) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);

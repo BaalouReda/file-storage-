@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import javax.crypto.SecretKey;
+
 @Data
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -21,4 +23,5 @@ public class Metadata {
     String bucketName;
     int duplicateCount;
     int version;
+    String secretKey;
 }
