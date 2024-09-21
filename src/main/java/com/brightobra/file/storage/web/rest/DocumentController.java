@@ -2,7 +2,7 @@ package com.brightobra.file.storage.web.rest;
 
 
 import com.brightobra.file.storage.dto.DocumentDto;
-import com.brightobra.file.storage.pojo.DtoViews;
+import com.brightobra.file.storage.pojo.FileDtoViews;
 import com.brightobra.file.storage.service.DocumentService;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,7 +21,8 @@ import org.springframework.http.MediaType;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/document")
+@RequestMapping("/api/document/")
+//@PreAuthorize("hasAnyAuthority('ADMIN')")
 public class DocumentController {
     private final DocumentService documentService;
 
@@ -29,7 +31,7 @@ public class DocumentController {
             produces = "application/json",
             consumes = { "multipart/form-data" }
     )
-    @JsonView(DtoViews.DocumentDtoUpload.class)
+    @JsonView(FileDtoViews.DocumentDtoUpload.class)
     public ResponseEntity<?> uploadFile(
             @RequestPart("file") MultipartFile file
     ) {
@@ -43,9 +45,9 @@ public class DocumentController {
     @RequestMapping(
             method = RequestMethod.GET,
             produces = "application/json",
-            path = "/{id}"
+            path = "{id}"
     )
-    @JsonView(DtoViews.DocumentDtoDownload.class)
+    @JsonView(FileDtoViews.DocumentDtoDownload.class)
     public ResponseEntity<?> downloadFile(
             @PathVariable String id
     ) {

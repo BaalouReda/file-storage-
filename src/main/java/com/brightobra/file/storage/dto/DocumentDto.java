@@ -1,6 +1,6 @@
 package com.brightobra.file.storage.dto;
 
-import com.brightobra.file.storage.pojo.DtoViews;
+import com.brightobra.file.storage.pojo.FileDtoViews;
 import com.brightobra.file.storage.pojo.Metadata;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Builder;
@@ -12,12 +12,12 @@ import org.springframework.core.io.ByteArrayResource;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 @Builder
 public class DocumentDto {
-    @JsonView(DtoViews.DocumentDtoUpload.class)
+    @JsonView(FileDtoViews.DocumentDtoUpload.class)
     String id;
-    @JsonView(DtoViews.DocumentDtoUpload.class)
+    @JsonView(FileDtoViews.DocumentDtoUpload.class)
     String fileName;
-    @JsonView(DtoViews.DocumentDtoDownload.class)
+    @JsonView(FileDtoViews.DocumentDtoDownload.class)
     ByteArrayResource file;
-    @JsonView(DtoViews.DocumentDtoDownload.class)
+    @JsonView(FileDtoViews.DocumentDtoDownload.class)
     Metadata fileMetadata;
 }

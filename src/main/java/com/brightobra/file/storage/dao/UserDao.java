@@ -9,9 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Data
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
@@ -25,9 +29,18 @@ public class UserDao implements UserDetails {
     String email;
     @JsonIgnore
     String password;
-    Set<Role> authorities; // Roles are simplified for illustration
+    Role role;
+    String bucketName;
     boolean accountNonExpired;
     boolean isEnabled;
     boolean accountNonLocked;
     boolean credentialsNonExpired;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if(role != null)
+            authorities.add(new SimpleGrantedAuthority(role.getValue()));
+        return authorities;
+    }
 }

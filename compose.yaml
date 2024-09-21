@@ -10,9 +10,9 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
       MONGO_INITDB_DATABASE: storage
-    volumes:
-      - mongo-data:/data/db
+#    volumes:
+#      - mongo-data:/data/db
 
-volumes:
-  mongo-data:
-    driver: local
+#volumes:
+#  mongo-data:
+#    driver: local
