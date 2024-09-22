@@ -4,11 +4,12 @@ import com.brightobra.file.storage.dto.DocumentDto;
 import com.brightobra.file.storage.dto.UserDto;
 import com.brightobra.file.storage.pojo.Metadata;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.bouncycastle.bcpg.CompressionAlgorithmTags;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
@@ -17,9 +18,9 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.crypto.SecretKey;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.Objects;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -32,18 +33,27 @@ public class GridFSUtil {
 
     private final MongoDatabaseFactory dbFactory;
     private final MongoConverter converter;
-    private SecretKey secretKey;
 
-    @PostConstruct
-    public void init() throws Exception {
-        secretKey = EncryptionUtil.generateKey();
-    }
+    private static  final String passkey = "brightobra";
+
 
     public  DocumentDto upload(MultipartFile fileContent, UserDto userDto) {
         try{
             GridFsTemplate gridFsTemplate = new GridFsTemplate(dbFactory,converter, userDto.getBucketName());
 
+            PgpEncryptionUtil pgpEncryptionUtil = PgpEncryptionUtil.builder()
+                    .armor(true)
+                    .compressionAlgorithm(CompressionAlgorithmTags.ZIP)
+                    .symmetricKeyAlgorithm(SymmetricKeyAlgorithmTags.AES_128)
+                    .withIntegrityCheck(true)
+                    .build();
+
+            File file = new File("src/main/resources/secret/public.pgp");
+            URL publicKey = file.toURI().toURL();
+
             InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
+            InputStream encryptedIn = pgpEncryptionUtil.encrypt(inputStream,fileContent.getSize(), publicKey.openStream());
+            //InputStream encryptedStream = EncryptionUtil.encrypt(inputStream, secretKey);
             Metadata metadata = Metadata.builder()
                     .fileName(fileContent.getOriginalFilename())
                     .fileSize(fileContent.getSize())
@@ -57,9 +67,9 @@ public class GridFSUtil {
                     .build();
 
 
-            InputStream encryptedStream = EncryptionUtil.encrypt(inputStream, secretKey);
 
-            ObjectId objectId = gridFsTemplate.store(encryptedStream,
+
+            ObjectId objectId = gridFsTemplate.store(encryptedIn,
                     Objects.requireNonNull(fileContent.getOriginalFilename()),
                     metadata);
             return DocumentDto
@@ -85,9 +95,14 @@ public class GridFSUtil {
             GridFsResource GridFSResource = gridFsTemplate.getResource(file);
             InputStream inputStream = GridFSResource.getInputStream();
 
-            InputStream decryptedStream = EncryptionUtil.decrypt(inputStream, secretKey);
+            File keyFile = new File("src/main/resources/secret/private.pgp");
+            URL privateKey = keyFile.toURI().toURL();
 
-            ByteArrayResource resource = new ByteArrayResource(decryptedStream.readAllBytes());
+            PgpDecryptionUtil pgpDecryptionUtil = new PgpDecryptionUtil(privateKey.openStream(),passkey);
+            //InputStream decryptedStream = EncryptionUtil.decrypt(inputStream, secretKey);
+            OutputStream decryptedStream  = Files.newOutputStream(Files.createTempFile("pgp-","-decrypted"));
+            pgpDecryptionUtil.decrypt(inputStream,decryptedStream);
+            ByteArrayResource resource = convertOutputStreamToResource(decryptedStream);
             assert file.getMetadata() != null;
             return DocumentDto.builder()
                     .id(file.getId().toString())
@@ -108,5 +123,15 @@ public class GridFSUtil {
         }
     }
 
+    public ByteArrayResource convertOutputStreamToResource(OutputStream outputStream) throws IOException {
+        // Ensure OutputStream is a ByteArrayOutputStream for conversion
+        if (outputStream instanceof ByteArrayOutputStream) {
+            ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) outputStream;
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            return new ByteArrayResource(byteArray);
+        }
+
+        throw new IllegalArgumentException("The provided OutputStream is not a ByteArrayOutputStream");
+    }
 
 }
